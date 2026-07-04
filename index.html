@@ -142,6 +142,8 @@
             overflow-y: auto;
             z-index: 10;
             padding-top: 20px;
+            display: flex;
+            flex-direction: column;
         }
         .sidebar-brand {
             padding: 0 24px 24px 24px;
@@ -180,6 +182,29 @@
             border-left-color: var(--orange);
             color: var(--orange);
             background: rgba(255, 127, 0, 0.1);
+        }
+
+        /* Logout button at bottom of sidebar */
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 20px 24px;
+            border-top: 1px solid var(--dark-slate);
+        }
+        .logout-btn {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            border: 2px solid var(--red);
+            color: var(--red);
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: var(--radius);
+            transition: background 0.2s, color 0.2s;
+        }
+        .logout-btn:hover {
+            background: var(--red);
+            color: white;
         }
 
         /* ─── MAIN ─── */
@@ -708,6 +733,9 @@
                 font-size: 13px;
                 margin: 2px 8px 2px 0;
             }
+            .sidebar-footer {
+                padding: 12px 20px;
+            }
             .main-area {
                 margin-left: 0;
                 padding: 20px;
@@ -796,6 +824,11 @@
             <div class="nav-link active" data-page="dash">Dashboard</div>
             <div class="nav-link" data-page="pos">POS Terminal</div>
             <div class="nav-link" data-page="inventory">Inventory</div>
+
+            <!-- Logout at bottom -->
+            <div class="sidebar-footer">
+                <button class="logout-btn" onclick="doLogout()"> Logout</button>
+            </div>
         </aside>
 
         <!-- MAIN -->
@@ -809,22 +842,22 @@
                     <div class="card">
                         <h3>Today's Sales</h3>
                         <h2>KSh 24,500</h2>
-                        <div class="card-icon">💰</div>
+                        <div class="card-icon"></div>
                     </div>
                     <div class="card">
                         <h3>Transactions</h3>
                         <h2>38</h2>
-                        <div class="card-icon">📋</div>
+                        <div class="card-icon"></div>
                     </div>
                     <div class="card">
                         <h3>Low Stock Items</h3>
                         <h2 id="dashLowStock">7</h2>
-                        <div class="card-icon">⚠️</div>
+                        <div class="card-icon"></div>
                     </div>
                     <div class="card">
                         <h3>Expiring Soon</h3>
                         <h2 id="dashExpiring">4</h2>
-                        <div class="card-icon">📅</div>
+                        <div class="card-icon"></div>
                     </div>
                 </div>
 
@@ -849,7 +882,7 @@
                         <div class="product-grid" id="productGrid"></div>
                     </div>
                     <div class="cart-panel">
-                        <h3>🧾 Current Sale</h3>
+                        <h3>Current Sale</h3>
                         <div class="cart-items" id="cartItems"><div class="cart-empty">Cart is empty</div></div>
                         <div class="cart-total" id="cartTotal">KSh 0</div>
                         <button class="btn btn-green" onclick="checkout()" style="margin-top:14px;width:100%;">Checkout</button>
@@ -875,7 +908,7 @@
     <!-- ═══ MODAL: ADD MEDICINE ═══ -->
     <div class="modal-overlay" id="addModal">
         <div class="modal">
-            <h2>➕ Add Medicine</h2>
+            <h2> Add Medicine</h2>
             <p class="modal-sub">Fill in the details below to add a new medicine to inventory.</p>
             <form id="addForm" onsubmit="submitMedicine(event)">
                 <div class="form-grid">
@@ -917,7 +950,7 @@
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-outline" onclick="closeAddModal()">Cancel</button>
-                    <button type="submit" class="btn btn-orange">💾 Save Medicine</button>
+                    <button type="submit" class="btn btn-orange">Save Medicine</button>
                 </div>
             </form>
         </div>
@@ -993,15 +1026,36 @@
         let cart = [];
 
         // ─────────────────────────────────────────────────────────────
-        //  LOGIN
+        //  LOGIN / LOGOUT
         // ─────────────────────────────────────────────────────────────
 
         function doLogin() {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('appContainer').style.display = 'block';
+            // Reset cart on fresh login
+            cart = [];
+            updateCart();
             renderInventory();
             renderProducts();
             updateDashCounts();
+            // Ensure dashboard is active
+            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+            document.querySelector('.nav-link[data-page="dash"]').classList.add('active');
+            document.querySelectorAll('[id^="page-"]').forEach(p => p.classList.add('hidden'));
+            document.getElementById('page-dash').classList.remove('hidden');
+        }
+
+        function doLogout() {
+            // Clear cart
+            cart = [];
+            updateCart();
+            // Hide app, show login
+            document.getElementById('appContainer').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
+            // Optionally clear fields
+            document.getElementById('user').value = 'admin';
+            document.getElementById('pass').value = 'admin';
+            toast('Logged out successfully', 'success');
         }
 
         // ─────────────────────────────────────────────────────────────
